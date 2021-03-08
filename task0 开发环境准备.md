@@ -1,3 +1,7 @@
+## task0 开发环境准备
+
+### Android开发简介
+
 当今大部分手机都是Android手机，市场占有率远远超过苹果手机。Android操作系统不仅在手机领域，在平板、手表、电视、汽车、智能硬件和物联网开发等领域也有广泛的使用。本课程以手机为主讲解android应用的开发。
 
 学习Android应用开发，我们首先要记住一个网址 https://developer.android.google.cn/ ，如果觉得这个网址过长的话，也可以直接访问 https://developers.google.cn/ ，这里除了可以学习android，还可以学习人工智能平台TensorFlow。
@@ -10,7 +14,7 @@ https://developer.android.google.cn/studio 。根据操作系统的不同选择�
 
 下面我们来正式开始安装和配置
 
-1. 安装Android Studio
+### 安装Android Studio
 
 双击下载的安装包，出现如图界面
 
@@ -54,7 +58,7 @@ Configure：配置，下一节详细讲解
 
 Get Help:获取帮助，一般是英文的，大家也看不了，大家想学习的话，可以从 https://developer.android.google.cn/docs 这个入口进入
 
-2. Android Studio 配置
+### Android Studio 配置
 
 在欢迎界面的右下角点击Configure进入如图节目
 ![img](images/task0.2.configure.PNG)
@@ -96,9 +100,9 @@ Android的SDK是Android的软件开发工具包，里面包含各种库和工具
 
 右边有个工具条，可以进行各种操作，大家有兴趣可以探索一下可以做些什么。这个虚拟设备共享了主机的网络，也可以上网。
 
-这里有个问题一定要注意，如果你的用户不是英文的话，会造成模拟手机不能运行。所以我们首先要删掉这个模拟手机，然后要在某个纯英文的目录下建立一个目录avd，最好是sdk目录下，便于管理。然后设置环境变量Android_SDK_HOME，值为这个avd目录。然后关闭Android Studio 后重新打开，然后重新进入avd设置即可。
+这里有个问题一定要注意，如果你的用户不是英文的话，会造成模拟手机不能运行。所以我们首先要删掉这个模拟手机，然后要在某个纯英文的目录下建立一个目录avd，最好是sdk目录下，便于管理。然后设置环境变量Android_SDK_HOME，值为这个avd目录。然后关闭Android Studio 后重新打开，然后重新进入avd设置即可。这个位置是默认在系统盘，即使你的之前的JDK目录设置了其它盘，所以空间不够的话，可以在新的SDK目录建个新的目录avd，然后吧环境变量Android_SDK_HOME环境变量指向这个文件夹。
 
-3. 第一个android程序
+### 第一个android程序
 
 在欢迎界面中，我们点击Create New Project创建第一个工程。如图所示。
 
@@ -117,6 +121,8 @@ Android的SDK是Android的软件开发工具包，里面包含各种库和工具
 ![img](images/task0.3.firstapprun.PNG)
 
 点击下方的按钮可以切换界面，至此我们不写一行代码，第一个程序跑出来了。
+
+### 连接真正的手机
 
 如果有同学想在自己的手机跑这个程序，首先要找根数据线，连接电脑和手机，然后进入手机的开发者模式。不同手机进入开发者模式的方式不太一样，大家可以自行搜索，下面以我的华为荣耀8青春版为例，来讲解如何进入开发者模式。
 
@@ -145,3 +151,39 @@ Android的SDK是Android的软件开发工具包，里面包含各种库和工具
 ![img](images/task0.3.firstapprunphone.PNG)
 
 点击运行，然后Android Studio会在手机上安装我们的第一个App。在手机上一路允许，最终会看到第一个程序出现了。
+
+### Android Studio 使用简介
+
+####　菜单
+
+File->New:主要用来创建项目，导入项目，创建文件等。
+
+File->Open:主要用于打开项目。
+
+File->Settings:用于打开系统设置。
+
+File->OpenRecent:打开最近的项目。
+
+File->Project Structure:可以管理Gradle插件以及Gradle的版本，可以管理Android SDK和JDK的位置，可以管理SDK的编译版本和java兼容性，可以管理项目的依赖包等
+
+File->Sync Project with Gradle Files:可以调用gradle构建项目。
+
+Tools->AVD Manager:对虚拟设备进行设置。
+
+Tools->SDK Manager:对Android SDK进行设置。
+
+Help->Check For Updates:检查升级。
+
+####　项目结构
+
+左侧边栏主要展现项目的结构，默认是Android视图。如图所示。里面的文件可以通过右键->Show in Explorer在文件夹中查看。
+
+![img](images/task0.4.filestructure.png)
+
+
+
+整个项目分为app和Gradle Scripts两个部分。app是项目文件夹，gradle是编译配置。
+
+项目文件夹中包含清单文件AndroidManifest.xml 保存activity信息，启动信息，权限列表等。还有java源码，我们的程序就在这儿。还有资源文件夹res，里面包含所有的界面布局，图片，文字等资源。
+
+gradle是个构建工具，可以很方便的设置系统的包依赖，并自动去仓库中下载，无需开发人员一个个去找，大大提高了效率。
