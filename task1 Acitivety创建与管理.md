@@ -6,13 +6,13 @@
 
 右键左边栏中任何位置New->Activity->Empty Activity，出现创建Activity对话框，如图所示。
 
-![img](images/1.1createsplashactivity.png)
+![img](images/1.1createsplashactivity.PNG)
 
 设置Activity Name为SplashActivity。勾选Generate a Layout File，这样系统会在res->layout下生成一个布局文件。Layout Name默认为activity_splash。然后勾选Launcher Activity，表示app启动时首先运行SplashActivity。后面的都默认，点击Finish。
 
 系统自动在AndroidManifest.xml中加入下面一节activity配置，表示从SplashActivity启动。如图所示。
 
-![img](images/1.1splashactivitymanifest.png)
+![img](images/1.1splashactivitymanifest.PNG)
 
 系统在java->pub.renge.myfirstapp下自动生成了SplashActivity.java文件，我们可以在这个文件中编写程序设置闪屏几秒中，下一个屏幕是什么。
 
@@ -22,7 +22,7 @@
 
 activity_splash.xml文件以xml文件保存布局样式，编辑方式有两种，代码模式和设计模式。如果所示，左边是代码，纯文本，右边是设计器，拖拽的模式，所见即所得，这是一种文件的两种不同编辑方式而已，最终还是文本文件的方式保存。
 
-![img](images/1.1activitysplashxml.png)
+![img](images/1.1activitysplashxml.PNG)
 
 具体文件内容如下：
 
@@ -110,15 +110,15 @@ activity_splash.xml文件以xml文件保存布局样式，编辑方式有两种�
 
 设计效果如图所示，版本号和版权声明并没有填，这个主要是给大家演示下，如何用程序填写。
 
-![img](images/task1.1activitysplashdesign.png)
+![img](images/task1.1activitysplashdesign.PNG)
 
 图片素材来自网络，大家可以自行搜索相关图片，然后把图片导入到res的drawable下，具体方法是点击图片中ImageView的左边栏选择图片标记，然后点击Import Drawables上传图片即可，记得xml文件中图片来源要和实际图片文件名称一致。
 
-![img](images/task1.1pickimage.png)
+![img](images/task1.1pickimage.PNG)
 
 对于TextView控件的text和color属性，这里并没有写死，而是用一个常量来表示，比如@string/app_name,表示在strings.xml里面有个变量app_name可以设置，@color表示在colors.xml中设置颜色。这种方式可以很方便修改这些值。如图所示。
 
-![img](images/task1.1stringandcolor.png)
+![img](images/task1.1stringandcolor.PNG)
 
 
 
