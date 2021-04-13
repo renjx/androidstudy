@@ -1049,15 +1049,11 @@ public class ProductTourActivity extends AppCompatActivity {
 }
 ```
 
-加入适当的引用和加入适当的依赖后，就可以运行了，最后在AndroidManifest.xml中设置ProductTourActivity为启动Activity。
+加入适当的引用和加入适当的依赖后，就可以运行了，然后在AndroidManifest.xml中设置ProductTourActivity为NoActionBar。
 
 ```
 <activity android:name=".ProductTourActivity"
     android:theme="@style/Theme.AppCompat.NoActionBar" >
-    <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
-        <category android:name="android.intent.category.LAUNCHER" />
-    </intent-filter>
 </activity>
 ```
 
