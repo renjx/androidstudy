@@ -2,7 +2,7 @@
 
 本章任务是把文件列表显示在文件容器的控件上。
 
-### ３.1 创建MainFragment和相关布局文件
+### 4.1 创建MainFragment和相关布局文件
 
 #### 1. 创建MainFragment
 
@@ -487,7 +487,7 @@ public class CircleGradientDrawable extends GradientDrawable {
 
 
 
-### 3.2 创建相关基础类
+### 4.2 创建相关基础类
 
 
 
@@ -512,294 +512,7 @@ implementation 'com.afollestad.material-dialogs:lifecycle:3.3.0'
 
 
 
-#### 2. 创建类FileHelper
-
-在utils下创建类FileHelper，修改包名为pub.renge.filemanage.utils。具体代码如下：
-
-```java
-package pub.renge.filemanage.utils;
-
-import android.content.ActivityNotFoundException;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.provider.BaseColumns;
-import android.provider.MediaStore;
-import android.text.TextUtils;
-import android.widget.Toast;
-
-import com.afollestad.materialdialogs.MaterialDialog;
-import com.afollestad.materialdialogs.list.DialogSingleChoiceExtKt;
-
-import java.io.File;
-import java.util.Arrays;
-
-import pub.renge.filemanage.MainActivity;
-import pub.renge.filemanage.R;
-import pub.renge.filemanage.ui.icons.Icons;
-import pub.renge.filemanage.ui.icons.MimeTypes;
-
-public class FileHelper {
-
-    private static final String INTERNAL_VOLUME = "internal";
-    public static final String EXTERNAL_VOLUME = "external";
-
-    private static final String EMULATED_STORAGE_SOURCE = System.getenv("EMULATED_STORAGE_SOURCE");
-    private static final String EMULATED_STORAGE_TARGET = System.getenv("EMULATED_STORAGE_TARGET");
-    private static final String EXTERNAL_STORAGE = System.getenv("EXTERNAL_STORAGE");
-
-    /**
-     * 计算图片的缩放比例，避免OOM
-     *
-     * @param options
-     * @param reqWidth
-     * @param reqHeight
-     * @return
-     */
-    public static int calculateInSampleSize(BitmapFactory.Options options,
-                                     int reqWidth, int reqHeight) {
-        // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and
-            // keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) > reqHeight
-                    && (halfWidth / inSampleSize) > reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-
-        return inSampleSize;
-    }
-
-    /**
-     * 格式化文件大小
-     *
-     * @param f
-     * @return
-     */
-    public static String getFileSize(File f) {
-        int sub_index = 0;
-        String show = "";
-        if (f.isFile()) {
-            long length = f.length();
-            if (length >= 1073741824) {
-                sub_index = (String.valueOf((float) length / 1073741824))
-                        .indexOf(".");
-                show = ((float) length / 1073741824 + "000").substring(0,
-                        sub_index + 3) + "GB";
-            } else if (length >= 1048576) {
-                sub_index = (String.valueOf((float) length / 1048576))
-                        .indexOf(".");
-                show = ((float) length / 1048576 + "000").substring(0,
-                        sub_index + 3) + "MB";
-            } else if (length >= 1024) {
-                sub_index = (String.valueOf((float) length / 1024))
-                        .indexOf(".");
-                show = ((float) length / 1024 + "000").substring(0,
-                        sub_index + 3) + "KB";
-            } else if (length < 1024) {
-                show = String.valueOf(length) + "B";
-            }
-        } else {
-            show = "";
-        }
-
-        return show;
-    }
-
-    /**
-     * 打开文件
-     *
-     * @param f
-     * @param m
-     */
-    public void openFile(final File f, final MainActivity m) {
-        try {
-            openunknown(f, m, false);
-        } catch (Exception e) {
-            Toast.makeText(m, R.string.noappfound, Toast.LENGTH_LONG).show();
-            openWith(f, m);
-        }
-    }
-
-    public void openunknown(File f, Context c, boolean forcechooser) {
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-
-        String type = MimeTypes.getMimeType(f);
-        if (type != null && type.trim().length() != 0 && !type.equals("*/*")) {
-            Uri uri = fileToContentUri(c, f);
-            if (uri == null) uri = Uri.fromFile(f);
-            intent.setDataAndType(uri, type);
-            Intent startIntent;
-            if (forcechooser)
-                startIntent = Intent.createChooser(intent, c.getResources().getString(R.string.openwith));
-            else startIntent = intent;
-            try {
-                c.startActivity(startIntent);
-            } catch (ActivityNotFoundException e) {
-                e.printStackTrace();
-                Toast.makeText(c, R.string.noappfound, Toast.LENGTH_SHORT).show();
-                openWith(f, c);
-            }
-        } else {
-            openWith(f, c);
-        }
-    }
-
-    /**
-     * 打开方式
-     * @param file
-     * @param context
-     */
-    public void openWith(final File file, final Context context) {
-        MaterialDialog dialog = new MaterialDialog(context,MaterialDialog.getDEFAULT_BEHAVIOR());
-        dialog.title(R.string.openas,null);
-
-        String[] items = new String[]{getString(context, R.string.text), getString(context, R.string.image), getString(context, R.string.video), getString(context, R.string.audio), getString(context, R.string.other)};
-
-        DialogSingleChoiceExtKt.listItemsSingleChoice(dialog,null, Arrays.asList(items),null,0,true,  (materialDialog, integer, charSequences) -> {
-            Uri uri = fileToContentUri(context, file);
-            if (uri == null) uri = Uri.fromFile(file);
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_VIEW);
-            switch (integer) {
-                case 0:
-                    intent.setDataAndType(uri, "text/*");
-                    break;
-                case 1:
-                    intent.setDataAndType(uri, "image/*");
-                    break;
-                case 2:
-                    intent.setDataAndType(uri, "video/*");
-                    break;
-                case 3:
-                    intent.setDataAndType(uri, "audio/*");
-                    break;
-                case 4:
-                    intent.setDataAndType(uri, "*/*");
-                    break;
-            }
-            try {
-                context.startActivity(intent);
-            } catch (Exception e) {
-                Toast.makeText(context, R.string.noappfound, Toast.LENGTH_SHORT).show();
-                openWith(file, context);
-            }
-            return null;
-        });
-
-        dialog.show();
-    }
-
-    public Uri fileToContentUri(Context context, File file) {
-        // Normalize the path to ensure media search
-        final String normalizedPath = normalizeMediaPath(file.getAbsolutePath());
-
-        // Check in external and internal storages
-        Uri uri = fileToContentUri(context, normalizedPath, EXTERNAL_VOLUME);
-        if (uri != null) {
-            return uri;
-        }
-        uri = fileToContentUri(context, normalizedPath, INTERNAL_VOLUME);
-        if (uri != null) {
-            return uri;
-        }
-        return null;
-    }
-
-    private static Uri fileToContentUri(Context context, String path, String volume) {
-        String[] projection = null;
-        final String where = MediaStore.MediaColumns.DATA + " = ?";
-        Uri baseUri = MediaStore.Files.getContentUri(volume);
-        boolean isMimeTypeImage = false, isMimeTypeVideo = false, isMimeTypeAudio = false;
-        isMimeTypeImage = Icons.isPicture(path);
-        if (!isMimeTypeImage) {
-            isMimeTypeVideo = Icons.isVideo(path);
-            if (!isMimeTypeVideo) {
-                isMimeTypeAudio = Icons.isVideo(path);
-            }
-        }
-        if (isMimeTypeImage || isMimeTypeVideo || isMimeTypeAudio) {
-            projection = new String[]{BaseColumns._ID};
-            if (isMimeTypeImage) {
-                baseUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-            } else if (isMimeTypeVideo) {
-                baseUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-            } else if (isMimeTypeAudio) {
-                baseUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-            }
-        } else {
-            projection = new String[]{BaseColumns._ID, MediaStore.Files.FileColumns.MEDIA_TYPE};
-        }
-        ContentResolver cr = context.getContentResolver();
-        Cursor c = cr.query(baseUri, projection, where, new String[]{path}, null);
-        try {
-            if (c != null && c.moveToNext()) {
-                boolean isValid = false;
-                if (isMimeTypeImage || isMimeTypeVideo || isMimeTypeAudio) {
-                    isValid = true;
-                } else {
-                    int type = c.getInt(c.getColumnIndexOrThrow(
-                            MediaStore.Files.FileColumns.MEDIA_TYPE));
-                    isValid = type != 0;
-                }
-
-                if (isValid) {
-                    // Do not force to use content uri for no media files
-                    long id = c.getLong(c.getColumnIndexOrThrow(BaseColumns._ID));
-                    return Uri.withAppendedPath(baseUri, String.valueOf(id));
-                }
-            }
-        } finally {
-            if (c != null) {
-                c.close();
-            }
-        }
-        return null;
-    }
-
-
-    public static String normalizeMediaPath(String path) {
-        // Retrieve all the paths and check that we have this environment vars
-        if (TextUtils.isEmpty(EMULATED_STORAGE_SOURCE) ||
-                TextUtils.isEmpty(EMULATED_STORAGE_TARGET) ||
-                TextUtils.isEmpty(EXTERNAL_STORAGE)) {
-            return path;
-        }
-
-        // We need to convert EMULATED_STORAGE_SOURCE -> EMULATED_STORAGE_TARGET
-        if (path.startsWith(EMULATED_STORAGE_SOURCE)) {
-            path = path.replace(EMULATED_STORAGE_SOURCE, EMULATED_STORAGE_TARGET);
-        }
-        return path;
-    }
-
-    private String getString(Context c, int resID) {
-        return c.getResources().getString(resID);
-    }
-}
-
-
-```
-
-
-
-
-
-#### 3. 创建类MimeTypes
+#### 2. 创建类MimeTypes
 
 创建MimeTypes类对媒体类型进行管理。创建MimeTypes类，修改包名为pub.renge.filemanage.ui.icons。具体代码如下：
 
@@ -940,7 +653,7 @@ public final class MimeTypes {
 
 
 
-#### 4. 创建类Icons
+#### 3. 创建类Icons
 
 创建Icons类来对所有的图标进行处理。创建Icons类，修改包名为pub.renge.filemanage.ui.icons。具体代码如下：
 
@@ -1245,6 +958,299 @@ public class Icons {
     }
 }
 ```
+
+
+
+
+
+
+
+#### 4. 创建类FileHelper
+
+在utils下创建类FileHelper，修改包名为pub.renge.filemanage.utils。具体代码如下：
+
+```java
+package pub.renge.filemanage.utils;
+
+import android.content.ActivityNotFoundException;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.BaseColumns;
+import android.provider.MediaStore;
+import android.text.TextUtils;
+import android.widget.Toast;
+
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.list.DialogSingleChoiceExtKt;
+
+import java.io.File;
+import java.util.Arrays;
+
+import pub.renge.filemanage.MainActivity;
+import pub.renge.filemanage.R;
+import pub.renge.filemanage.ui.icons.Icons;
+import pub.renge.filemanage.ui.icons.MimeTypes;
+
+public class FileHelper {
+
+    private static final String INTERNAL_VOLUME = "internal";
+    public static final String EXTERNAL_VOLUME = "external";
+
+    private static final String EMULATED_STORAGE_SOURCE = System.getenv("EMULATED_STORAGE_SOURCE");
+    private static final String EMULATED_STORAGE_TARGET = System.getenv("EMULATED_STORAGE_TARGET");
+    private static final String EXTERNAL_STORAGE = System.getenv("EXTERNAL_STORAGE");
+
+    /**
+     * 计算图片的缩放比例，避免OOM
+     *
+     * @param options
+     * @param reqWidth
+     * @param reqHeight
+     * @return
+     */
+    public static int calculateInSampleSize(BitmapFactory.Options options,
+                                     int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and
+            // keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight
+                    && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
+    }
+
+    /**
+     * 格式化文件大小
+     *
+     * @param f
+     * @return
+     */
+    public static String getFileSize(File f) {
+        int sub_index = 0;
+        String show = "";
+        if (f.isFile()) {
+            long length = f.length();
+            if (length >= 1073741824) {
+                sub_index = (String.valueOf((float) length / 1073741824))
+                        .indexOf(".");
+                show = ((float) length / 1073741824 + "000").substring(0,
+                        sub_index + 3) + "GB";
+            } else if (length >= 1048576) {
+                sub_index = (String.valueOf((float) length / 1048576))
+                        .indexOf(".");
+                show = ((float) length / 1048576 + "000").substring(0,
+                        sub_index + 3) + "MB";
+            } else if (length >= 1024) {
+                sub_index = (String.valueOf((float) length / 1024))
+                        .indexOf(".");
+                show = ((float) length / 1024 + "000").substring(0,
+                        sub_index + 3) + "KB";
+            } else if (length < 1024) {
+                show = String.valueOf(length) + "B";
+            }
+        } else {
+            show = "";
+        }
+
+        return show;
+    }
+
+    /**
+     * 打开文件
+     *
+     * @param f
+     * @param m
+     */
+    public void openFile(final File f, final MainActivity m) {
+        try {
+            openunknown(f, m, false);
+        } catch (Exception e) {
+            Toast.makeText(m, R.string.noappfound, Toast.LENGTH_LONG).show();
+            openWith(f, m);
+        }
+    }
+
+    public void openunknown(File f, Context c, boolean forcechooser) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+
+        String type = MimeTypes.getMimeType(f);
+        if (type != null && type.trim().length() != 0 && !type.equals("*/*")) {
+            Uri uri = fileToContentUri(c, f);
+            if (uri == null) uri = Uri.fromFile(f);
+            intent.setDataAndType(uri, type);
+            Intent startIntent;
+            if (forcechooser)
+                startIntent = Intent.createChooser(intent, c.getResources().getString(R.string.openwith));
+            else startIntent = intent;
+            try {
+                c.startActivity(startIntent);
+            } catch (ActivityNotFoundException e) {
+                e.printStackTrace();
+                Toast.makeText(c, R.string.noappfound, Toast.LENGTH_SHORT).show();
+                openWith(f, c);
+            }
+        } else {
+            openWith(f, c);
+        }
+    }
+
+    /**
+     * 打开方式
+     * @param file
+     * @param context
+     */
+    public void openWith(final File file, final Context context) {
+        MaterialDialog dialog = new MaterialDialog(context,MaterialDialog.getDEFAULT_BEHAVIOR());
+        dialog.title(R.string.openas,null);
+
+        String[] items = new String[]{getString(context, R.string.text), getString(context, R.string.image), getString(context, R.string.video), getString(context, R.string.audio), getString(context, R.string.other)};
+
+        DialogSingleChoiceExtKt.listItemsSingleChoice(dialog,null, Arrays.asList(items),null,0,true,  (materialDialog, integer, charSequences) -> {
+            Uri uri = fileToContentUri(context, file);
+            if (uri == null) uri = Uri.fromFile(file);
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_VIEW);
+            switch (integer) {
+                case 0:
+                    intent.setDataAndType(uri, "text/*");
+                    break;
+                case 1:
+                    intent.setDataAndType(uri, "image/*");
+                    break;
+                case 2:
+                    intent.setDataAndType(uri, "video/*");
+                    break;
+                case 3:
+                    intent.setDataAndType(uri, "audio/*");
+                    break;
+                case 4:
+                    intent.setDataAndType(uri, "*/*");
+                    break;
+            }
+            try {
+                context.startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(context, R.string.noappfound, Toast.LENGTH_SHORT).show();
+                openWith(file, context);
+            }
+            return null;
+        });
+
+        dialog.show();
+    }
+
+    public Uri fileToContentUri(Context context, File file) {
+        // Normalize the path to ensure media search
+        final String normalizedPath = normalizeMediaPath(file.getAbsolutePath());
+
+        // Check in external and internal storages
+        Uri uri = fileToContentUri(context, normalizedPath, EXTERNAL_VOLUME);
+        if (uri != null) {
+            return uri;
+        }
+        uri = fileToContentUri(context, normalizedPath, INTERNAL_VOLUME);
+        if (uri != null) {
+            return uri;
+        }
+        return null;
+    }
+
+    private static Uri fileToContentUri(Context context, String path, String volume) {
+        String[] projection = null;
+        final String where = MediaStore.MediaColumns.DATA + " = ?";
+        Uri baseUri = MediaStore.Files.getContentUri(volume);
+        boolean isMimeTypeImage = false, isMimeTypeVideo = false, isMimeTypeAudio = false;
+        isMimeTypeImage = Icons.isPicture(path);
+        if (!isMimeTypeImage) {
+            isMimeTypeVideo = Icons.isVideo(path);
+            if (!isMimeTypeVideo) {
+                isMimeTypeAudio = Icons.isVideo(path);
+            }
+        }
+        if (isMimeTypeImage || isMimeTypeVideo || isMimeTypeAudio) {
+            projection = new String[]{BaseColumns._ID};
+            if (isMimeTypeImage) {
+                baseUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+            } else if (isMimeTypeVideo) {
+                baseUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+            } else if (isMimeTypeAudio) {
+                baseUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+            }
+        } else {
+            projection = new String[]{BaseColumns._ID, MediaStore.Files.FileColumns.MEDIA_TYPE};
+        }
+        ContentResolver cr = context.getContentResolver();
+        Cursor c = cr.query(baseUri, projection, where, new String[]{path}, null);
+        try {
+            if (c != null && c.moveToNext()) {
+                boolean isValid = false;
+                if (isMimeTypeImage || isMimeTypeVideo || isMimeTypeAudio) {
+                    isValid = true;
+                } else {
+                    int type = c.getInt(c.getColumnIndexOrThrow(
+                            MediaStore.Files.FileColumns.MEDIA_TYPE));
+                    isValid = type != 0;
+                }
+
+                if (isValid) {
+                    // Do not force to use content uri for no media files
+                    long id = c.getLong(c.getColumnIndexOrThrow(BaseColumns._ID));
+                    return Uri.withAppendedPath(baseUri, String.valueOf(id));
+                }
+            }
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        return null;
+    }
+
+
+    public static String normalizeMediaPath(String path) {
+        // Retrieve all the paths and check that we have this environment vars
+        if (TextUtils.isEmpty(EMULATED_STORAGE_SOURCE) ||
+                TextUtils.isEmpty(EMULATED_STORAGE_TARGET) ||
+                TextUtils.isEmpty(EXTERNAL_STORAGE)) {
+            return path;
+        }
+
+        // We need to convert EMULATED_STORAGE_SOURCE -> EMULATED_STORAGE_TARGET
+        if (path.startsWith(EMULATED_STORAGE_SOURCE)) {
+            path = path.replace(EMULATED_STORAGE_SOURCE, EMULATED_STORAGE_TARGET);
+        }
+        return path;
+    }
+
+    private String getString(Context c, int resID) {
+        return c.getResources().getString(resID);
+    }
+}
+
+
+```
+
+
+
+
 
 
 
@@ -1716,7 +1722,7 @@ public class FileListSorter implements Comparator<FileBean> {
 
 
 
-### 3.3 创建适配器RecyclerAdapter并显示文件
+### 4.3 创建适配器RecyclerAdapter并显示文件
 
 #### 1. 获取文件权限
 

@@ -8,7 +8,7 @@ Fragment从android3.0开始引入，用于设计界面中可重复使用的部�
 
 #### 3.1.1 创建引导页Fragment-ProductTourFragment
 
-依次点击File->New->Fragment->Fragment(Blank)，Fragment Name为：ProductTourFragment，如图所示。
+鼠标选中java目录，依次点击File->New->Fragment->Fragment(Blank)，Fragment Name为：ProductTourFragment，如图所示。
 
 
 
@@ -18,7 +18,7 @@ Fragment从android3.0开始引入，用于设计界面中可重复使用的部�
 
 为了让整个项目中类的组织更加合理，我们给改fragment的报名后面加上.fragments。
 
-在这个activity里面我们可以通过传入不同的fragment布局文件来生成不同的fragment对象。具体的代码如下：
+在这个activity里面我们可以通过传入不同的fragment布局文件来生成不同的fragment对象。修改该fragment的代码ProductTourFragment.java，具体的代码如下：
 
 ```java
 package pub.renge.filemanage.fragments;
@@ -640,7 +640,7 @@ xxxhdpi：192×192
 
 #### 3.1.3 在build.gradle里面的dependencies里面添加必要的依赖包
 
-在本节我们会用到一些第三方组件，比如nineoldandroids来实现动画效果。
+在本节我们会用到一些第三方组件，比如nineoldandroids来实现动画效果。在Build.gradle(Module)中的dependencies节下添加如下依赖：
 
 ```
 implementation 'com.nineoldandroids:library:2.4.0'
@@ -1204,8 +1204,6 @@ private void checkShowTutorial() {
     android:theme="@style/Theme.AppCompat.NoActionBar" >
 </activity>
 ```
-
-在MainActivity.java的MainActivity类中
 
 然后执行APP，效果如下：
 
